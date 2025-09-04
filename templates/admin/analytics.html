@@ -1,0 +1,386 @@
+{% extends "admin/base.html" %}
+
+{% block title %}التحليلات والتقارير - DecluxDZ{% endblock %}
+
+{% block page_title %}التحليلات والتقارير{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">الرئيسية</a></li>
+        <li class="breadcrumb-item active">التحليلات</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Analytics Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4>التحليلات والتقارير</h4>
+        <p class="text-muted mb-0">تحليل شامل لأداء المتجر والمبيعات</p>
+    </div>
+    <div>
+        <button class="btn btn-outline-primary" onclick="window.print()">
+            <i class="fas fa-print me-2"></i>
+            طباعة التقرير
+        </button>
+    </div>
+</div>
+
+<!-- Key Performance Indicators -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card-body text-center">
+                <div class="display-6 fw-bold">{{ "{:,.0f}".format(sales_by_province|sum(attribute='total_revenue') or 0) }}</div>
+                <div>إجمالي الإيرادات (دج)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+            <div class="card-body text-center">
+                <div class="display-6 fw-bold">{{ sales_by_province|sum(attribute='order_count') or 0 }}</div>
+                <div>إجمالي الطلبات</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+            <div class="card-body text-center">
+                {% set avg_order = (sales_by_province|sum(attribute='total_revenue') / sales_by_province|sum(attribute='order_count'))|round if sales_by_province|sum(attribute='order_count') > 0 else 0 %}
+                <div class="display-6 fw-bold">{{ "{:,.0f}".format(avg_order) }}</div>
+                <div>متوسط قيمة الطلب (دج)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+            <div class="card-body text-center">
+                <div class="display-6 fw-bold">{{ top_products|sum(attribute='total_sold') or 0 }}</div>
+                <div>المنتجات المباعة</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Monthly Revenue Chart -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    الإيرادات الشهرية
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" style="max-height: 400px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Provinces -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    أفضل الولايات
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if sales_by_province %}
+                {% for province in sales_by_province[:10] %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0">{{ province.wilaya }}</h6>
+                        <small class="text-muted">{{ province.order_count }} طلب</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold">{{ "{:,.0f}".format(province.total_revenue) }} دج</div>
+                        <div class="progress" style="width: 100px; height: 4px;">
+                            {% set max_revenue = sales_by_province[0].total_revenue if sales_by_province else 1 %}
+                            <div class="progress-bar" style="width: {{ (province.total_revenue / max_revenue * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">لا توجد بيانات مبيعات حسب الولاية</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-3">
+    <!-- Top Products -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    أفضل المنتجات مبيعاً
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if top_products %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم المنتج</th>
+                                <th>الكمية المباعة</th>
+                                <th>إجمالي الإيرادات</th>
+                                <th>النسبة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td class="fw-bold">{{ loop.index }}</td>
+                                <td>{{ product.name_ar }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ product.total_sold }}</span>
+                                </td>
+                                <td class="fw-bold">{{ "{:,.0f}".format(product.total_revenue) }} دج</td>
+                                <td>
+                                    {% set total_sold = top_products|sum(attribute='total_sold') %}
+                                    {% set percentage = (product.total_sold / total_sold * 100)|round(1) if total_sold > 0 else 0 %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 60px; height: 8px;">
+                                            <div class="progress-bar" style="width: {{ percentage }}%"></div>
+                                        </div>
+                                        <span class="small">{{ percentage }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">لا توجد بيانات مبيعات للمنتجات</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales by Province Chart -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    توزيع المبيعات حسب الولاية
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="provincesChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Analytics -->
+<div class="row g-4 mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    تحليل الأداء التفصيلي
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <div class="border-end p-3">
+                            <h4 class="text-primary">{{ top_products|length }}</h4>
+                            <small class="text-muted">منتجات نشطة</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end p-3">
+                            <h4 class="text-success">{{ sales_by_province|length }}</h4>
+                            <small class="text-muted">ولايات تم التوصيل إليها</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end p-3">
+                            {% set conversion_rate = 100 if sales_by_province|sum(attribute='order_count') > 0 else 0 %}
+                            <h4 class="text-warning">{{ conversion_rate|round }}%</h4>
+                            <small class="text-muted">معدل التحويل</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end p-3">
+                            {% set best_month = monthly_revenue|max(attribute='revenue') if monthly_revenue else {'revenue': 0} %}
+                            <h4 class="text-info">{{ "{:,.0f}".format(best_month.revenue) }}</h4>
+                            <small class="text-muted">أفضل شهر (دج)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="border-end p-3">
+                            {% set growth_rate = ((monthly_revenue[-1].revenue - monthly_revenue[0].revenue) / monthly_revenue[0].revenue * 100)|round if monthly_revenue|length > 1 and monthly_revenue[0].revenue > 0 else 0 %}
+                            <h4 class="text-{{ 'success' if growth_rate >= 0 else 'danger' }}">
+                                {{ growth_rate }}%
+                            </h4>
+                            <small class="text-muted">معدل النمو</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="p-3">
+                            {% set active_customers = sales_by_province|sum(attribute='order_count') %}
+                            <h4 class="text-dark">{{ active_customers }}</h4>
+                            <small class="text-muted">عملاء نشطين</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Revenue Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueData = {{ monthly_revenue|tojson }};
+
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: revenueData.map(item => {
+            const [year, month] = item.month.split('-');
+            const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                              'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+            return `${monthNames[parseInt(month) - 1]} ${year}`;
+        }),
+        datasets: [{
+            label: 'الإيرادات (دج)',
+            data: revenueData.map(item => item.revenue),
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#667eea',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return new Intl.NumberFormat('ar-DZ').format(value) + ' دج';
+                    }
+                }
+            }
+        },
+        elements: {
+            point: {
+                hoverRadius: 8
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        }
+    }
+});
+
+// Provinces Chart
+const provincesCtx = document.getElementById('provincesChart').getContext('2d');
+const provincesData = {{ sales_by_province[:5]|tojson }};
+
+new Chart(provincesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: provincesData.map(item => item.wilaya),
+        datasets: [{
+            data: provincesData.map(item => item.total_revenue),
+            backgroundColor: [
+                '#667eea',
+                '#f093fb',
+                '#4facfe',
+                '#fa709a',
+                '#ffecd2'
+            ],
+            borderWidth: 0,
+            hoverBorderWidth: 3,
+            hoverBorderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const value = new Intl.NumberFormat('ar-DZ').format(context.raw);
+                        return context.label + ': ' + value + ' دج';
+                    }
+                }
+            }
+        },
+        cutout: '60%'
+    }
+});
+
+// Print styles
+const printStyles = `
+    <style>
+        @media print {
+            .btn, .navbar, .sidebar, .breadcrumb { display: none !important; }
+            .card { box-shadow: none; border: 1px solid #ddd; }
+            body { background: white !important; }
+            .text-primary { color: #000 !important; }
+        }
+    </style>
+`;
+document.head.insertAdjacentHTML('beforeend', printStyles);
+</script>
+{% endblock %}

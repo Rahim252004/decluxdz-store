@@ -1,0 +1,232 @@
+{% extends "admin/base.html" %}
+
+{% block title %}لوحة التحكم - DecluxDZ{% endblock %}
+
+{% block page_title %}لوحة التحكم الرئيسية{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_products }}</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <span>إجمالي المنتجات</span>
+                <i class="fas fa-box fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card" style="background: linear-gradient(135deg, var(--success-color) 0%, #2f7d5b 100%);">
+            <div class="stats-number">{{ total_orders }}</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <span>إجمالي الطلبات</span>
+                <i class="fas fa-shopping-bag fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card" style="background: linear-gradient(135deg, var(--warning-color) 0%, #b8860b 100%);">
+            <div class="stats-number">{{ total_customers }}</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <span>إجمالي العملاء</span>
+                <i class="fas fa-users fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card" style="background: linear-gradient(135deg, var(--error-color) 0%, #c53030 100%);">
+            <div class="stats-number">{{ pending_orders }}</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <span>طلبات قيد الانتظار</span>
+                <i class="fas fa-clock fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Orders -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-shopping-bag me-2"></i>
+                    الطلبات الأخيرة
+                </h5>
+                <a href="{{ url_for('admin_orders') }}" class="btn btn-outline-primary btn-sm">
+                    عرض الكل
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>رقم الطلب</th>
+                                <th>العميل</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                                <th>التاريخ</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ order.order_number }}</td>
+                                <td>
+                                    <div>{{ order.customer.name }}</div>
+                                    <small class="text-muted">{{ order.customer.phone }}</small>
+                                </td>
+                                <td class="fw-bold">{{ "{:,.0f}".format(order.total_amount) }} دج</td>
+                                <td>
+                                    {% set status_info = {
+                                        'pending': {'text': 'قيد الانتظار', 'class': 'warning'},
+                                        'in_delivery': {'text': 'في التوصيل', 'class': 'info'},
+                                        'delivered': {'text': 'تم التسليم', 'class': 'success'}
+                                    } %}
+                                    {% set current_status = status_info[order.status] %}
+                                    <span class="badge bg-{{ current_status.class }}">
+                                        {{ current_status.text }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>{{ order.created_at.strftime('%Y/%m/%d') }}</div>
+                                    <small class="text-muted">{{ order.created_at.strftime('%H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="POST" action="{{ url_for('admin_update_order_status', id=order.id) }}" class="d-inline">
+                                            <select name="status" class="form-select form-select-sm status-select" style="width: auto;">
+                                                <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>قيد الانتظار</option>
+                                                <option value="in_delivery" {{ 'selected' if order.status == 'in_delivery' else '' }}>في التوصيل</option>
+                                                <option value="delivered" {{ 'selected' if order.status == 'delivered' else '' }}>تم التسليم</option>
+                                            </select>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">لا توجد طلبات حتى الآن</h6>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Monthly Revenue -->
+    <div class="col-xl-4">
+        <!-- Monthly Revenue -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    الإيرادات الشهرية
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="display-6 fw-bold text-success mb-2">
+                    {{ "{:,.0f}".format(monthly_revenue) }} دج
+                </div>
+                <small class="text-muted">آخر 30 يوماً</small>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    إجراءات سريعة
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_add_product') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        إضافة منتج جديد
+                    </a>
+                    <a href="{{ url_for('admin_orders', status='pending') }}" class="btn btn-warning">
+                        <i class="fas fa-clock me-2"></i>
+                        طلبات قيد الانتظار
+                    </a>
+                    <a href="{{ url_for('admin_customers') }}" class="btn btn-info">
+                        <i class="fas fa-users me-2"></i>
+                        إدارة العملاء
+                    </a>
+                    <a href="{{ url_for('admin_analytics') }}" class="btn btn-success">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        التحليلات والتقارير
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>
+                    نظرة عامة على النشاط
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h4 class="text-primary">{{ total_products }}</h4>
+                            <small class="text-muted">منتج نشط</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h4 class="text-success">{{ total_orders }}</h4>
+                            <small class="text-muted">طلب إجمالي</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h4 class="text-warning">{{ pending_orders }}</h4>
+                            <small class="text-muted">طلب قيد المعالجة</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-info">{{ total_customers }}</h4>
+                        <small class="text-muted">عميل مسجل</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh dashboard stats every 30 seconds
+setInterval(function() {
+    // Add a subtle animation to indicate refresh
+    document.querySelectorAll('.stats-card').forEach(card => {
+        card.style.opacity = '0.8';
+        setTimeout(() => {
+            card.style.opacity = '1';
+        }, 300);
+    });
+}, 30000);
+</script>
+{% endblock %}

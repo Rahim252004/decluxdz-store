@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}تم إنشاء الطلب بنجاح - DecluxDZ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle fa-5x text-success"></i>
+                </div>
+                <h1 class="display-5 fw-bold text-success mb-3">تم إنشاء الطلب بنجاح!</h1>
+                <p class="lead text-muted">شكراً لك على ثقتك في DecluxDZ</p>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>
+                        تفاصيل الطلب
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>رقم الطلب:</strong>
+                            <div class="text-primary fw-bold fs-4">{{ order.order_number }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>حالة الطلب:</strong>
+                            <div>
+                                <span class="badge bg-warning fs-6">قيد الانتظار</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>إجمالي المبلغ:</strong>
+                            <div class="text-primary fw-bold">{{ "{:,.0f}".format(order.total_amount) }} دج</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>طريقة الدفع:</strong>
+                            <div>الدفع عند الاستلام</div>
+                        </div>
+                        <div class="col-12">
+                            <strong>عنوان التوصيل:</strong>
+                            <div>{{ order.address }}, {{ order.wilaya }}</div>
+                        </div>
+                        {% if order.notes %}
+                        <div class="col-12">
+                            <strong>ملاحظات:</strong>
+                            <div>{{ order.notes }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>
+                        المنتجات المطلوبة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in order.items %}
+                    <div class="d-flex align-items-center mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}">
+                        <div class="me-3">
+                            {% if item.product.image_url %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.product.image_url) }}" 
+                                 class="rounded" style="width: 60px; height: 60px; object-fit: cover;" 
+                                 alt="{{ item.product.name_ar }}"
+                                 onerror="this.src='https://via.placeholder.com/60x60?text=صورة'">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 60px; height: 60px;">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ item.product.name_ar }}</h6>
+                            <div class="text-muted small">
+                                الكمية: {{ item.quantity }} × {{ "{:,.0f}".format(item.price) }} دج
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold">{{ "{:,.0f}".format(item.quantity * item.price) }} دج</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="alert alert-info">
+                <h5 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>
+                    ما التالي؟
+                </h5>
+                <ul class="mb-0">
+                    <li>سيتم التواصل معك هاتفياً لتأكيد الطلب خلال 24 ساعة</li>
+                    <li>سيتم تحضير طلبك وشحنه خلال 1-3 أيام عمل</li>
+                    <li>ستتلقى رسالة تحديث عندما يكون الطلب في طريقه إليك</li>
+                    <li>ادفع المبلغ نقداً عند استلام الطلب من المندوب</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center">
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ url_for('track_order') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search me-2"></i>
+                        تتبع الطلب
+                    </a>
+                    <a href="{{ url_for('shop') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-store me-2"></i>
+                        متابعة التسوق
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    لأي استفسار، تواصل معنا على
+                    <a href="tel:+213555000000" class="text-decoration-none">
+                        <i class="fas fa-phone me-1"></i>
+                        +213 555 000 000
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

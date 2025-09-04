@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}تتبع الطلب - DecluxDZ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary text-center mb-3">
+                <i class="fas fa-search me-3"></i>
+                تتبع الطلب
+            </h1>
+            <p class="lead text-center text-muted">
+                أدخل رقم الطلب لمعرفة حالته الحالية
+            </p>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-6 col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="order_number" class="form-label fw-bold">رقم الطلب</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="fas fa-hashtag"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="order_number" 
+                                       name="order_number" 
+                                       placeholder="مثال: ABC12345"
+                                       value="{{ request.form.get('order_number', '') }}"
+                                       required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>
+                                    بحث
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                يمكنك العثور على رقم الطلب في رسالة تأكيد الطلب
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if order %}
+    <!-- Order Found -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Order Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box me-2"></i>
+                        حالة الطلب رقم: {{ order.order_number }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-2">الحالة الحالية:</h5>
+                            {% set status_info = {
+                                'pending': {'text': 'قيد الانتظار', 'class': 'warning', 'icon': 'clock'},
+                                'in_delivery': {'text': 'في التوصيل', 'class': 'info', 'icon': 'truck'},
+                                'delivered': {'text': 'تم التسليم', 'class': 'success', 'icon': 'check-circle'}
+                            } %}
+                            {% set current_status = status_info[order.status] %}
+                            <span class="badge bg-{{ current_status.class }} fs-5 p-3">
+                                <i class="fas fa-{{ current_status.icon }} me-2"></i>
+                                {{ current_status.text }}
+                            </span>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-muted">
+                                <small>تاريخ الطلب</small><br>
+                                <strong>{{ order.created_at.strftime('%Y/%m/%d - %H:%M') }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Progress -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-route me-2"></i>
+                        مراحل الطلب
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Step 1: Pending -->
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="progress-step {{ 'active' if order.status in ['pending', 'in_delivery', 'delivered'] else '' }}">
+                                <div class="step-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h6 class="mt-2">قيد الانتظار</h6>
+                                <small class="text-muted">تم استلام الطلب</small>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: In Delivery -->
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="progress-step {{ 'active' if order.status in ['in_delivery', 'delivered'] else '' }}">
+                                <div class="step-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <h6 class="mt-2">في التوصيل</h6>
+                                <small class="text-muted">الطلب في الطريق</small>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Delivered -->
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="progress-step {{ 'active' if order.status == 'delivered' else '' }}">
+                                <div class="step-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h6 class="mt-2">تم التسليم</h6>
+                                <small class="text-muted">وصل بأمان</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        تفاصيل الطلب
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>اسم العميل:</strong>
+                            <div>{{ order.customer.name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>رقم الهاتف:</strong>
+                            <div>{{ order.customer.phone }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>المبلغ الإجمالي:</strong>
+                            <div class="text-primary fw-bold">{{ "{:,.0f}".format(order.total_amount) }} دج</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>طريقة الدفع:</strong>
+                            <div>الدفع عند الاستلام</div>
+                        </div>
+                        <div class="col-12">
+                            <strong>عنوان التوصيل:</strong>
+                            <div>{{ order.address }}, {{ order.wilaya }}</div>
+                        </div>
+                        {% if order.notes %}
+                        <div class="col-12">
+                            <strong>ملاحظات:</strong>
+                            <div>{{ order.notes }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        المنتجات ({{ order.items|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in order.items %}
+                    <div class="d-flex align-items-center mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}">
+                        <div class="me-3">
+                            {% if item.product.image_url %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.product.image_url) }}" 
+                                 class="rounded" style="width: 60px; height: 60px; object-fit: cover;" 
+                                 alt="{{ item.product.name_ar }}"
+                                 onerror="this.src='https://via.placeholder.com/60x60?text=صورة'">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 60px; height: 60px;">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ item.product.name_ar }}</h6>
+                            <div class="text-muted small">
+                                الكمية: {{ item.quantity }} × {{ "{:,.0f}".format(item.price) }} دج
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold">{{ "{:,.0f}".format(item.quantity * item.price) }} دج</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="alert alert-info">
+                <h6 class="alert-heading">
+                    <i class="fas fa-headset me-2"></i>
+                    هل تحتاج مساعدة؟
+                </h6>
+                <p class="mb-0">
+                    إذا كان لديك أي استفسار حول طلبك، تواصل معنا على:
+                    <br>
+                    <i class="fas fa-phone me-1"></i> +213 555 000 000
+                    <br>
+                    <i class="fas fa-envelope me-1"></i> info@decluxdz.com
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% elif request.method == 'POST' %}
+    <!-- Order Not Found -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-4"></i>
+                <h4 class="text-muted mb-3">لم يتم العثور على الطلب</h4>
+                <p class="text-muted mb-4">
+                    تأكد من رقم الطلب وحاول مرة أخرى.<br>
+                    إذا كان الرقم صحيحاً، تواصل معنا للمساعدة.
+                </p>
+                <a href="{{ url_for('contact') }}" class="btn btn-primary">
+                    <i class="fas fa-envelope me-2"></i>
+                    تواصل معنا
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.progress-step {
+    position: relative;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active {
+    opacity: 1;
+}
+
+.step-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active .step-icon {
+    background: var(--primary-color);
+    color: white;
+}
+
+.progress-step::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #e9ecef;
+    z-index: -1;
+}
+
+.progress-step:last-child::after {
+    display: none;
+}
+
+.progress-step.active::after {
+    background: var(--primary-color);
+}
+</style>
+{% endblock %}

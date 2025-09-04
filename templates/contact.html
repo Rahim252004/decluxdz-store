@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}اتصل بنا - DecluxDZ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary text-center mb-3">
+                <i class="fas fa-envelope me-3"></i>
+                اتصل بنا
+            </h1>
+            <p class="lead text-center text-muted">
+                نحن هنا لمساعدتك! تواصل معنا وسنجيب على جميع استفساراتك
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Contact Form -->
+        <div class="col-lg-8 mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        أرسل لنا رسالة
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form.name.label(class="form-label required") }}
+                                {{ form.name(class="form-control", required=True) }}
+                                <div class="invalid-feedback">
+                                    يرجى إدخال اسمك
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control", type="tel") }}
+                            </div>
+                            
+                            <div class="col-12">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control", type="email") }}
+                                <div class="form-text">سنستخدم بريدك الإلكتروني للرد عليك</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                {{ form.subject.label(class="form-label") }}
+                                {{ form.subject(class="form-control", placeholder="موضوع الرسالة") }}
+                            </div>
+                            
+                            <div class="col-12">
+                                {{ form.message.label(class="form-label required") }}
+                                {{ form.message(class="form-control", rows="5", required=True, placeholder="اكتب رسالتك هنا...") }}
+                                <div class="invalid-feedback">
+                                    يرجى كتابة رسالتك
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    إرسال الرسالة
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="col-lg-4">
+            <!-- Contact Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        معلومات التواصل
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="contact-info">
+                        <div class="contact-item mb-4">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h6>الهاتف</h6>
+                                <a href="tel:+213555000000" class="text-decoration-none">
+                                    +213 555 000 000
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="contact-item mb-4">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h6>البريد الإلكتروني</h6>
+                                <a href="mailto:info@decluxdz.com" class="text-decoration-none">
+                                    info@decluxdz.com
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="contact-item mb-4">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h6>العنوان</h6>
+                                <p class="mb-0">الجزائر العاصمة، الجزائر</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h6>ساعات العمل</h6>
+                                <p class="mb-1">السبت - الخميس</p>
+                                <p class="mb-1">9:00 صباحاً - 6:00 مساءً</p>
+                                <p class="mb-0 text-muted">الجمعة: مغلق</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-share-alt me-2"></i>
+                        تابعنا
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fab fa-facebook-f me-2"></i>
+                            Facebook
+                        </a>
+                        <a href="#" class="btn btn-outline-info">
+                            <i class="fab fa-instagram me-2"></i>
+                            Instagram
+                        </a>
+                        <a href="#" class="btn btn-outline-success">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        أسئلة شائعة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                    كم يستغرق التوصيل؟
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    يستغرق التوصيل عادة من 1-3 أيام عمل حسب المنطقة.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                    هل التوصيل مجاني؟
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    نعم، التوصيل مجاني لجميع الولايات في الجزائر.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                    ما هي طرق الدفع المتاحة؟
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" 
+                                 data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    نقبل الدفع عند الاستلام فقط حالياً.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contact-info .contact-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.contact-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.contact-details h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.contact-details p, 
+.contact-details a {
+    color: var(--text-light);
+    margin-bottom: 0;
+}
+
+.contact-details a:hover {
+    color: var(--primary-color);
+}
+
+.required::after {
+    content: " *";
+    color: red;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "admin/base.html" %}
+
+{% block title %}إدارة الطلبات - DecluxDZ{% endblock %}
+
+{% block page_title %}إدارة الطلبات{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">الرئيسية</a></li>
+        <li class="breadcrumb-item active">الطلبات</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Actions -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4>قائمة الطلبات</h4>
+        <p class="text-muted mb-0">إدارة جميع طلبات العملاء</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin_orders') }}" 
+           class="btn {{ 'btn-primary' if not status_filter else 'btn-outline-primary' }}">
+            جميع الطلبات
+        </a>
+        <a href="{{ url_for('admin_orders', status='pending') }}" 
+           class="btn {{ 'btn-warning' if status_filter == 'pending' else 'btn-outline-warning' }}">
+            قيد الانتظار
+        </a>
+        <a href="{{ url_for('admin_orders', status='in_delivery') }}" 
+           class="btn {{ 'btn-info' if status_filter == 'in_delivery' else 'btn-outline-info' }}">
+            في التوصيل
+        </a>
+        <a href="{{ url_for('admin_orders', status='delivered') }}" 
+           class="btn {{ 'btn-success' if status_filter == 'delivered' else 'btn-outline-success' }}">
+            تم التسليم
+        </a>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+            الطلبات ({{ orders.total }})
+            {% if status_filter %}
+            - {{ {'pending': 'قيد الانتظار', 'in_delivery': 'في التوصيل', 'delivered': 'تم التسليم'}[status_filter] }}
+            {% endif %}
+        </h6>
+        <span class="text-muted">
+            صفحة {{ orders.page }} من {{ orders.pages }}
+        </span>
+    </div>
+    
+    {% if orders.items %}
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>معلومات العميل</th>
+                    <th>المنتجات</th>
+                    <th>المبلغ الإجمالي</th>
+                    <th>الحالة</th>
+                    <th>العنوان</th>
+                    <th>تاريخ الطلب</th>
+                    <th width="150">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders.items %}
+                <tr>
+                    <td>
+                        <strong class="text-primary">{{ order.order_number }}</strong>
+                    </td>
+                    <td>
+                        <div>
+                            <strong>{{ order.customer.name }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-phone me-1"></i>
+                                {{ order.customer.phone }}
+                            </small>
+                            {% if order.customer.email %}
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-envelope me-1"></i>
+                                {{ order.customer.email }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-light text-dark me-2">{{ order.items|length }}</span>
+                            <div>
+                                {% for item in order.items[:2] %}
+                                <small class="d-block">{{ item.product.name_ar }} ({{ item.quantity }})</small>
+                                {% endfor %}
+                                {% if order.items|length > 2 %}
+                                <small class="text-muted">و {{ order.items|length - 2 }} منتج آخر...</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="fw-bold">{{ "{:,.0f}".format(order.total_amount) }} دج</td>
+                    <td>
+                        {% set status_info = {
+                            'pending': {'text': 'قيد الانتظار', 'class': 'warning'},
+                            'in_delivery': {'text': 'في التوصيل', 'class': 'info'},
+                            'delivered': {'text': 'تم التسليم', 'class': 'success'}
+                        } %}
+                        {% set current_status = status_info[order.status] %}
+                        <span class="badge bg-{{ current_status.class }}">
+                            {{ current_status.text }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 150px;" title="{{ order.address }}, {{ order.wilaya }}">
+                            <strong>{{ order.wilaya }}</strong>
+                            <br>
+                            <small class="text-muted">{{ order.address[:30] }}...</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div>{{ order.created_at.strftime('%Y/%m/%d') }}</div>
+                        <small class="text-muted">{{ order.created_at.strftime('%H:%M') }}</small>
+                    </td>
+                    <td>
+                        <!-- Order Details Modal Trigger -->
+                        <div class="d-grid gap-1">
+                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                    data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">
+                                <i class="fas fa-eye me-1"></i>
+                                تفاصيل
+                            </button>
+                            
+                            <!-- Status Update Form -->
+                            <form method="POST" action="{{ url_for('admin_update_order_status', id=order.id) }}" class="d-grid">
+                                <select name="status" class="form-select form-select-sm status-select">
+                                    <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>قيد الانتظار</option>
+                                    <option value="in_delivery" {{ 'selected' if order.status == 'in_delivery' else '' }}>في التوصيل</option>
+                                    <option value="delivered" {{ 'selected' if order.status == 'delivered' else '' }}>تم التسليم</option>
+                                </select>
+                            </form>
+                        </div>
+
+                        <!-- Order Details Modal -->
+                        <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">تفاصيل الطلب {{ order.order_number }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Customer Info -->
+                                        <div class="row mb-4">
+                                            <div class="col-md-6">
+                                                <h6 class="fw-bold">معلومات العميل</h6>
+                                                <p class="mb-1"><strong>الاسم:</strong> {{ order.customer.name }}</p>
+                                                <p class="mb-1"><strong>الهاتف:</strong> {{ order.customer.phone }}</p>
+                                                {% if order.customer.email %}
+                                                <p class="mb-1"><strong>البريد:</strong> {{ order.customer.email }}</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="fw-bold">تفاصيل الطلب</h6>
+                                                <p class="mb-1"><strong>التاريخ:</strong> {{ order.created_at.strftime('%Y/%m/%d %H:%M') }}</p>
+                                                <p class="mb-1"><strong>الحالة:</strong> 
+                                                    <span class="badge bg-{{ current_status.class }}">{{ current_status.text }}</span>
+                                                </p>
+                                                <p class="mb-1"><strong>المبلغ:</strong> {{ "{:,.0f}".format(order.total_amount) }} دج</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Delivery Address -->
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold">عنوان التوصيل</h6>
+                                            <p class="mb-1"><strong>الولاية:</strong> {{ order.wilaya }}</p>
+                                            <p class="mb-1"><strong>العنوان:</strong> {{ order.address }}</p>
+                                            {% if order.notes %}
+                                            <p class="mb-1"><strong>ملاحظات:</strong> {{ order.notes }}</p>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Order Items -->
+                                        <div>
+                                            <h6 class="fw-bold">المنتجات المطلوبة</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>المنتج</th>
+                                                            <th>الكمية</th>
+                                                            <th>السعر</th>
+                                                            <th>المجموع</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for item in order.items %}
+                                                        <tr>
+                                                            <td>{{ item.product.name_ar }}</td>
+                                                            <td>{{ item.quantity }}</td>
+                                                            <td>{{ "{:,.0f}".format(item.price) }} دج</td>
+                                                            <td class="fw-bold">{{ "{:,.0f}".format(item.quantity * item.price) }} دج</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr class="table-active">
+                                                            <th colspan="3">المجموع الكلي</th>
+                                                            <th>{{ "{:,.0f}".format(order.total_amount) }} دج</th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if orders.pages > 1 %}
+    <div class="card-footer">
+        <nav aria-label="صفحات الطلبات">
+            <ul class="pagination justify-content-center mb-0">
+                {% if orders.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_orders', page=orders.prev_num, status=status_filter) }}">
+                        السابق
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in orders.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != orders.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_orders', page=page_num, status=status_filter) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if orders.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_orders', page=orders.next_num, status=status_filter) }}">
+                        التالي
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No Orders -->
+    <div class="card-body text-center py-5">
+        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+        {% if status_filter %}
+        <h5 class="text-muted">لا توجد طلبات {{ {'pending': 'قيد الانتظار', 'in_delivery': 'في التوصيل', 'delivered': 'تم التسليم'}[status_filter] }}</h5>
+        <p class="text-muted">لا توجد طلبات بهذه الحالة حالياً</p>
+        <a href="{{ url_for('admin_orders') }}" class="btn btn-outline-primary">
+            عرض جميع الطلبات
+        </a>
+        {% else %}
+        <h5 class="text-muted">لا توجد طلبات</h5>
+        <p class="text-muted">لم يتم استلام أي طلبات بعد</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

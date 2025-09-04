@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}DecluxDZ - ديكور الجبس الأنيق في الجزائر{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">DecluxDZ</h1>
+            <p class="hero-subtitle">
+                أفضل ديكور جبس داخلي في الجزائر
+                <br>
+                تصاميم أنيقة وجودة عالية لجميع المنازل
+            </p>
+            <a href="{{ url_for('shop') }}" class="btn btn-hero btn-lg">
+                <i class="fas fa-store me-2"></i>
+                تسوق الآن
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-primary mb-3">أقسام المنتجات</h2>
+            <p class="lead text-muted">اكتشف مجموعة واسعة من ديكورات الجبس عالية الجودة</p>
+        </div>
+        
+        <div class="row g-4">
+            {% if categories %}
+                {% for category in categories %}
+                <div class="col-lg-4 col-md-6">
+                    <a href="{{ url_for('shop', category=category.id) }}" class="category-card d-block">
+                        <div class="category-icon">
+                            {% if 'سقف' in category.name_ar %}
+                                <i class="fas fa-building"></i>
+                            {% elif 'جدار' in category.name_ar %}
+                                <i class="fas fa-paint-roller"></i>
+                            {% elif 'كورنيش' in category.name_ar %}
+                                <i class="fas fa-border-style"></i>
+                            {% elif 'عمود' in category.name_ar %}
+                                <i class="fas fa-columns"></i>
+                            {% elif 'إطار' in category.name_ar %}
+                                <i class="fas fa-frame"></i>
+                            {% else %}
+                                <i class="fas fa-gem"></i>
+                            {% endif %}
+                        </div>
+                        <h4 class="fw-bold">{{ category.name_ar }}</h4>
+                        <p class="text-muted">{{ category.description or 'تشكيلة رائعة من المنتجات عالية الجودة' }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <div class="py-5">
+                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">لا توجد أقسام متاحة حالياً</h4>
+                        <p class="text-muted">سيتم إضافة الأقسام قريباً</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-primary mb-3">المنتجات المميزة</h2>
+            <p class="lead text-muted">أفضل منتجاتنا المختارة بعناية</p>
+        </div>
+        
+        {% if featured_products %}
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100">
+                    {% if product.image_url %}
+                    <img src="{{ url_for('static', filename='uploads/' + product.image_url) }}" 
+                         class="card-img-top" 
+                         alt="{{ product.name_ar }}"
+                         onerror="this.src='https://via.placeholder.com/300x250?text=صورة+غير+متوفرة'">
+                    {% else %}
+                    <img src="https://via.placeholder.com/300x250?text={{ product.name_ar }}" 
+                         class="card-img-top" 
+                         alt="{{ product.name_ar }}">
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="product-title">{{ product.name_ar }}</h5>
+                        {% if product.description_ar %}
+                        <p class="card-text text-muted flex-grow-1">
+                            {{ product.description_ar[:100] }}
+                            {% if product.description_ar|length > 100 %}...{% endif %}
+                        </p>
+                        {% endif %}
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="product-price">{{ "{:,.0f}".format(product.price) }} دج</span>
+                                <span class="badge bg-success">متوفر</span>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('product_detail', id=product.id) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> عرض التفاصيل
+                                </a>
+                                <form method="POST" action="{{ url_for('add_to_cart') }}" class="d-inline">
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-cart-plus me-1"></i> أضف للسلة
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('shop') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-eye me-2"></i>
+                عرض جميع المنتجات
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">لا توجد منتجات مميزة حالياً</h4>
+            <p class="text-muted">تفقد المتجر لاستكشاف جميع المنتجات المتاحة</p>
+            <a href="{{ url_for('shop') }}" class="btn btn-primary">
+                <i class="fas fa-store me-2"></i>
+                تصفح المتجر
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 text-center">
+                <div class="p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-truck fa-3x text-primary"></i>
+                    </div>
+                    <h4>توصيل لجميع الولايات</h4>
+                    <p class="text-muted">نصل إليك في جميع أنحاء الجزائر الـ 58 ولاية</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 text-center">
+                <div class="p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-money-bill-wave fa-3x text-primary"></i>
+                    </div>
+                    <h4>الدفع عند الاستلام</h4>
+                    <p class="text-muted">ادفع عند استلام طلبك بأمان وراحة بال</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 text-center">
+                <div class="p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-award fa-3x text-primary"></i>
+                    </div>
+                    <h4>جودة مضمونة</h4>
+                    <p class="text-muted">منتجات عالية الجودة مع ضمان الرضا</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h3 class="fw-bold mb-2">هل تحتاج مساعدة في اختيار المنتج المناسب؟</h3>
+                <p class="mb-0 opacity-90">
+                    تواصل معنا الآن وسيساعدك فريقنا المختص في اختيار أفضل ديكور لمنزلك
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('contact') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-comments me-2"></i>
+                    تواصل معنا
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
