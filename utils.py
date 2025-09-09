@@ -1,5 +1,6 @@
 import os
 import uuid
+from flask import current_app
 from werkzeug.utils import secure_filename
 
 # All 58 Algerian provinces
@@ -14,24 +15,33 @@ ALGERIAN_PROVINCES = [
     "إن صالح", "إن قزام", "توقرت", "جانت", "المغير", "المنيعة"
 ]
 
+
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def save_uploaded_file(file, folder='uploads'):
+def save_uploaded_file(file, folder=None):
     if file and allowed_file(file.filename):
-        # Generate unique filename
+        # نحدد المجلد: إذا ما عطيناش واحد، نستخدم UPLOAD_FOLDER من إعدادات Flask
+        upload_folder = folder or current_app.config['UPLOAD_FOLDER']
+
+        # نولّي نتأكد أن المجلد موجود
+        os.makedirs(upload_folder, exist_ok=True)
+
+        # نولّد اسم ملف فريد
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
         unique_filename = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
-        
-        file_path = os.path.join(folder, unique_filename)
-        file.save(file_path)
-        return unique_filename
-    return None
 
+        # المسار النهائي
+        file_path = os.path.join(upload_folder, unique_filename)
+        file.save(file_path)
+
+        return unique_filename  # نخزن الاسم فقط في قاعدة البيانات
+    return None
 def generate_order_number():
     """Generate a unique order number"""
     import random

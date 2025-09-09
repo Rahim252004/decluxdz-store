@@ -28,12 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Cart functionality
 function initializeCart() {
     // Add to cart buttons
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const productId = this.dataset.productId;
-            const quantity = this.dataset.quantity || 1;
+    
             
             // Show loading state
             const originalText = this.innerHTML;
@@ -59,8 +54,8 @@ function initializeCart() {
             form.appendChild(quantityInput);
             document.body.appendChild(form);
             form.submit();
-        });
-    });
+        };
+    
 
     // Update cart quantities
     document.querySelectorAll('.cart-quantity-input').forEach(input => {
@@ -80,7 +75,7 @@ function initializeCart() {
             }
         });
     });
-}
+
 
 // Quantity controls for product detail page
 function initializeQuantityControls() {

@@ -305,7 +305,13 @@
     <div class="col-md-3">
         <div class="card bg-success text-white">
             <div class="card-body text-center">
-                <h4>{{ customers.items|selectattr('orders')|list|length }}</h4>
+                {% set active_customers = 0 %}
+                {% for customer in customers.items %}
+                    {% if customer.orders|length > 0 %}
+                        {% set active_customers = active_customers + 1 %}
+                    {% endif %}
+                {% endfor %}
+                <h4>{{ active_customers }}</h4>
                 <small>عملاء نشطين</small>
             </div>
         </div>
@@ -313,7 +319,11 @@
     <div class="col-md-3">
         <div class="card bg-warning text-white">
             <div class="card-body text-center">
-                {% set avg_orders = (customers.items|sum(attribute='orders')|length / customers.items|length)|round if customers.items else 0 %}
+                {% set total_orders = 0 %}
+                {% for customer in customers.items %}
+                    {% set total_orders = total_orders + customer.orders|length %}
+                {% endfor %}
+                {% set avg_orders = (total_orders / customers.items|length)|round if customers.items else 0 %}
                 <h4>{{ avg_orders }}</h4>
                 <small>متوسط الطلبات</small>
             </div>
@@ -322,7 +332,12 @@
     <div class="col-md-3">
         <div class="card bg-info text-white">
             <div class="card-body text-center">
-                {% set total_spent = customers.items|map(attribute='orders')|sum(attribute='total_amount')|sum or 0 %}
+                {% set total_spent = 0 %}
+                {% for customer in customers.items %}
+                    {% for order in customer.orders %}
+                        {% set total_spent = total_spent + order.total_amount %}
+                    {% endfor %}
+                {% endfor %}
                 <h4>{{ "{:,.0f}".format(total_spent) }}</h4>
                 <small>إجمالي الإنفاق (دج)</small>
             </div>

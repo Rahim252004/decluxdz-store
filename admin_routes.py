@@ -7,6 +7,7 @@ from utils import save_uploaded_file
 import json
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from sqlalchemy import text
 
 def admin_required(f):
     """Decorator to require admin authentication"""
@@ -207,7 +208,7 @@ def admin_orders():
     
     return render_template('admin/orders.html', orders=orders, status_filter=status_filter)
 
-@app.route('/admin/orders/<int:id>/update_status', methods=['POST'])
+@app.route('/admin/orders/<int:id>/update_status', methods=['POST','GET'])
 @admin_required
 def admin_update_order_status(id):
     order = Order.query.get_or_404(id)
@@ -242,23 +243,51 @@ def admin_customers():
 @app.route('/admin/analytics')
 @admin_required
 def admin_analytics():
-    # Top selling products
-    top_products = db.session.query(
-        Product.name_ar,
-        func.sum(OrderItem.quantity).label('total_sold'),
-        func.sum(OrderItem.quantity * OrderItem.price).label('total_revenue')
-    ).join(OrderItem).group_by(Product.id).order_by(
-        func.sum(OrderItem.quantity).desc()
-    ).limit(10).all()
-    
     # Sales by province
-    sales_by_province = db.session.query(
+    sales_by_province_raw = db.session.query(
         Order.wilaya,
-        func.count(Order.id).label('order_count'),
+        func.count(Order.id).label('total_orders'),
         func.sum(Order.total_amount).label('total_revenue')
-    ).group_by(Order.wilaya).order_by(
-        func.sum(Order.total_amount).desc()
-    ).all()
+    ).group_by(Order.wilaya).order_by(func.sum(Order.total_amount).desc()).all()
+
+    sales_by_province = [
+        {
+            "wilaya": row[0],
+            "total_orders": int(row[1]),
+            "total_revenue": float(row[2])
+        }
+        for row in sales_by_province_raw
+    ]
+
+    # Monthly revenue
+    monthly_revenue_raw = db.session.query(
+        func.strftime("%Y-%m", Order.created_at).label("month"),
+        func.sum(Order.total_amount).label("revenue")
+    ).group_by("month").order_by("month").all()
+
+    monthly_revenue = [
+        {"month": row[0], "revenue": float(row[1])} for row in monthly_revenue_raw
+    ]
+
+    # Top products
+    top_products_raw = db.session.query(
+        Product.name_ar,
+        func.sum(OrderItem.quantity).label("total_sold"),
+        func.sum(OrderItem.quantity * OrderItem.price).label("total_revenue")
+    ).join(OrderItem.product).group_by(Product.id).order_by(func.sum(OrderItem.quantity).desc()).limit(10).all()
+
+    top_products = [
+        {"name": row[0], "total_sold": int(row[1]), "total_revenue": float(row[2])}
+        for row in top_products_raw
+    ]
+
+    return render_template(
+        "admin/analytics.html",
+        sales_by_province=sales_by_province,
+        monthly_revenue=monthly_revenue,
+        top_products=top_products
+    )
+
     
     # Monthly revenue trend (last 6 months)
     monthly_revenue = []

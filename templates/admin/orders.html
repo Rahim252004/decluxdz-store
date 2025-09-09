@@ -139,12 +139,15 @@
                             
                             <!-- Status Update Form -->
                             <form method="POST" action="{{ url_for('admin_update_order_status', id=order.id) }}" class="d-grid">
-                                <select name="status" class="form-select form-select-sm status-select">
-                                    <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>قيد الانتظار</option>
-                                    <option value="in_delivery" {{ 'selected' if order.status == 'in_delivery' else '' }}>في التوصيل</option>
-                                    <option value="delivered" {{ 'selected' if order.status == 'delivered' else '' }}>تم التسليم</option>
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <select name="status" class="form-select form-select-sm status-select" onchange="this.form.submit()">
+                                <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>قيد الانتظار</option>
+                                <option value="in_delivery" {{ 'selected' if order.status == 'in_delivery' else '' }}>في التوصيل</option>
+                                <option value="delivered" {{ 'selected' if order.status == 'delivered' else '' }}>تم التسليم</option>
                                 </select>
                             </form>
+
+
                         </div>
 
                         <!-- Order Details Modal -->

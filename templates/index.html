@@ -4,10 +4,19 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section" style="
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.3)), url('{{ url_for('static', filename='images/deco.jpg') }}');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+"> 
     <div class="container">
         <div class="hero-content">
-            <h1 class="hero-title">DecluxDZ</h1>
+            
             <p class="hero-subtitle">
                 أفضل ديكور جبس داخلي في الجزائر
                 <br>

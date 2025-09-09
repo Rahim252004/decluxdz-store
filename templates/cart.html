@@ -49,20 +49,15 @@
                     
                     <div class="col-md-3">
                         <form method="POST" action="{{ url_for('update_cart') }}" class="d-inline">
-                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                            <div class="input-group" style="width: 120px;">
-                                <button class="btn btn-outline-secondary" type="button" 
-                                        onclick="decreaseQuantity(this)">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <input type="number" class="form-control text-center cart-quantity-input" 
-                                       name="quantity" value="{{ item.quantity }}" min="1" max="99">
-                                <button class="btn btn-outline-secondary" type="button" 
-                                        onclick="increaseQuantity(this)">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                     <div class="input-group" style="width: 120px;">
+                        
+                     
+        ...
+                    </div>
                         </form>
+
                     </div>
                     
                     <div class="col-md-2 text-center">

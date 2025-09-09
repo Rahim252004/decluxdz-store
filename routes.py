@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, session, flash, jsonify
+from flask import render_template, request, redirect, url_for, session, flash, jsonify,send_from_directory
 from app import app, db
 from models import Product, Category, Order, OrderItem, Customer, Contact
 from forms import CheckoutForm, ContactForm
@@ -247,6 +247,11 @@ def contact():
         return redirect(url_for('contact'))
     
     return render_template('contact.html', form=form)
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Serve uploaded files (images) from the uploads directory"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.context_processor
 def inject_cart_count():

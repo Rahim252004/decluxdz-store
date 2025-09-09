@@ -23,6 +23,7 @@
             <div class="card">
                 <div class="card-body">
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="order_number" class="form-label fw-bold">رقم الطلب</label>
                             <div class="input-group input-group-lg">

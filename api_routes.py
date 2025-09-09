@@ -1,8 +1,9 @@
 from flask import jsonify, request, session
-from app import app, db
+from app import app, db, csrf
 from models import Product, Category, Order, OrderItem, Customer, Admin
 from utils import generate_order_number
 from werkzeug.security import check_password_hash
+from datetime import datetime
 
 # Customer API endpoints (no authentication required)
 
@@ -87,6 +88,7 @@ def api_get_cart():
     return jsonify({'items': cart_items, 'total': total})
 
 @app.route('/api/cart', methods=['POST'])
+@csrf.exempt
 def api_add_to_cart():
     data = request.get_json()
     product_id = data.get('product_id')

@@ -21,7 +21,8 @@
         </div>
     </div>
 
-    <form method="POST" class="needs-validation" novalidate>
+    <!-- Add action attribute for Flask -->
+    <form method="POST" action="{{ url_for('checkout') }}" class="needs-validation" novalidate>
         {{ form.hidden_tag() }}
         
         <div class="row">
@@ -39,17 +40,13 @@
                             <div class="col-md-6">
                                 {{ form.name.label(class="form-label required") }}
                                 {{ form.name(class="form-control", required=True) }}
-                                <div class="invalid-feedback">
-                                    يرجى إدخال الاسم الكامل
-                                </div>
+                                <div class="invalid-feedback">يرجى إدخال الاسم الكامل</div>
                             </div>
                             
                             <div class="col-md-6">
                                 {{ form.phone.label(class="form-label required") }}
                                 {{ form.phone(class="form-control", required=True, type="tel") }}
-                                <div class="invalid-feedback">
-                                    يرجى إدخال رقم هاتف صحيح
-                                </div>
+                                <div class="invalid-feedback">يرجى إدخال رقم هاتف صحيح</div>
                                 <div class="form-text">مثال: 0555123456 أو +213555123456</div>
                             </div>
                             
@@ -75,17 +72,13 @@
                             <div class="col-md-6">
                                 {{ form.wilaya.label(class="form-label required") }}
                                 {{ form.wilaya(class="form-select", required=True) }}
-                                <div class="invalid-feedback">
-                                    يرجى اختيار الولاية
-                                </div>
+                                <div class="invalid-feedback">يرجى اختيار الولاية</div>
                             </div>
                             
                             <div class="col-12">
                                 {{ form.address.label(class="form-label required") }}
                                 {{ form.address(class="form-control", rows="3", required=True, placeholder="العنوان الكامل مع ذكر الحي والشارع") }}
-                                <div class="invalid-feedback">
-                                    يرجى إدخال العنوان الكامل
-                                </div>
+                                <div class="invalid-feedback">يرجى إدخال العنوان الكامل</div>
                             </div>
                             
                             <div class="col-12">
@@ -111,9 +104,9 @@
                             ستدفع المبلغ نقداً عند استلام الطلب من المندوب
                         </div>
                         
+                        <!-- keep as normal HTML input -->
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="payment_method" 
-                                   id="cod" value="cod" checked>
+                            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
                             <label class="form-check-label fw-bold" for="cod">
                                 <i class="fas fa-hand-holding-usd me-2 text-primary"></i>
                                 الدفع عند الاستلام
