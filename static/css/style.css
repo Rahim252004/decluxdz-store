@@ -75,6 +75,35 @@ body {
     font-weight: 600;
 }
 
+.navbar-toggler {
+    border: none !important;
+    background: transparent !important;
+    padding: 0.5rem !important;
+    box-shadow: none !important;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Option 1: Dark hamburger lines */
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2844, 44, 44, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Option 2: Sage green hamburger lines (matches your accent color) */
+.navbar-toggler-icon.sage-color {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28156, 169, 134, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Hover effect */
+.navbar-toggler:hover {
+    background-color: rgba(156, 169, 134, 0.1) !important;
+    border-color: var(--accent-color) !important;
+}
 /* Hero Section */
 .hero-section {
     background-size: cover;
